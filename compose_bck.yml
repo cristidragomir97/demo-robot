@@ -39,15 +39,16 @@ services:
     environment: 
        - ROS_HOSTNAME=rosboard
        - ROS_MASTER_URI=http://roscore:11311
-    ports:
-      - "8888:8888"
+     ports:
+      - "8080:80"
     volumes:
       - shered-ros-bin:/opt/ros/noetic
  
-  hectorslam: 
-    build: ./hectorslam
-    environment: 
-      - ROS_HOSTNAME=hectorslam
-      - ROS_MASTER_URI=http://roscore:11311
+#    build: ./hectorslam
+#    network_mode: host
+#    environment: 
+##      - UDEV=1
+ #   devices:
+ #     - "/dev:/dev"
 
   
