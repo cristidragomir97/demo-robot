@@ -14,9 +14,9 @@ services:
        - UDEV=1
        - ROS_HOSTNAME=roscore
        - ROS_MASTER_URI=http://roscore:11311
-       
     links: 
       - rosboard
+      - hectorslam
       - lidar
     volumes:
       - shered-ros-bin:/opt/ros/noetic
@@ -35,7 +35,7 @@ services:
 
 
   rosboard:
-    image: cristidragomir97/rosboard:latest
+    build: ./rosboard
     environment: 
        - ROS_HOSTNAME=rosboard
        - ROS_MASTER_URI=http://roscore:11311
@@ -46,6 +46,8 @@ services:
  
   hectorslam: 
     build: ./hectorslam
+    volumes:
+      - shered-ros-bin:/opt/ros/noetic
     environment: 
       - ROS_HOSTNAME=hectorslam
       - ROS_MASTER_URI=http://roscore:11311
