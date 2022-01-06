@@ -8,7 +8,6 @@ volumes:
 services:
 
   roscore:
-  
     build: ./ros
     environment: 
        - UDEV=1
@@ -18,8 +17,21 @@ services:
       - rosboard
       - hectorslam
       - lidar
+      - robot-block
+    ports:
+      - "11311:11311"
     volumes:
       - shered-ros-bin:/opt/ros/noetic
+
+  #robot-block:
+  #  build: ./robot-block
+  #  privileged: true
+  #  environment: 
+  #3     - UDEV=1
+  #3     - ROS_HOSTNAME=robot-block
+  #3     - ROS_MASTER_URI=http://roscore:1131
+  #  volumes:
+  #3    - shered-ros-bin:/opt/ros/noetic
       
   lidar:
     image: cristidragomir97/rplidar:latest
@@ -33,7 +45,6 @@ services:
     volumes:
       - shered-ros-bin:/opt/ros/noetic
 
-
   rosboard:
     build: ./rosboard
     environment: 
@@ -46,6 +57,7 @@ services:
  
   hectorslam: 
     build: ./hectorslam
+    privileged: true
     volumes:
       - shered-ros-bin:/opt/ros/noetic
     environment: 
