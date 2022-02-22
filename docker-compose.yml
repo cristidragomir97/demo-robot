@@ -2,11 +2,10 @@
 version: '2.1'
 
 volumes:
-    shered-ros-bin:
-
+    ros-bin:
+    boost-bin:
 
 services:
-
   roscore:
     build: ./ros
     environment: 
@@ -15,35 +14,22 @@ services:
        - ROS_MASTER_URI=http://roscore:11311
     links: 
       - rosboard
-      - hectorslam
-      - lidar
-      - robot-block
+      - camera
     ports:
       - "11311:11311"
     volumes:
-      - shered-ros-bin:/opt/ros/noetic
+      - ros-bin:/opt/ros/noetic
+      - boost-bin:/usr/include/boost
 
-  #robot-block:
-  #  build: ./robot-block
-  #  privileged: true
-  #  environment: 
-  #3     - UDEV=1
-  #3     - ROS_HOSTNAME=robot-block
-  #3     - ROS_MASTER_URI=http://roscore:1131
-  #  volumes:
-  #3    - shered-ros-bin:/opt/ros/noetic
-      
-  lidar:
-    image: cristidragomir97/rplidar:latest
+  camera:
+    image: cristidragomir97/rpicam
     privileged: true
     environment: 
-       - UDEV=1
-       - ROS_HOSTNAME=lidar
+       - ROS_HOSTNAME=camera
        - ROS_MASTER_URI=http://roscore:11311
-    devices:
-      - "/dev:/dev"
     volumes:
-      - shered-ros-bin:/opt/ros/noetic
+      - ros-bin:/opt/ros/noetic
+      - boost-bin:/usr/include/boost
 
   rosboard:
     build: ./rosboard
@@ -53,15 +39,5 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - shered-ros-bin:/opt/ros/noetic
- 
-  hectorslam: 
-    build: ./hectorslam
-    privileged: true
-    volumes:
-      - shered-ros-bin:/opt/ros/noetic
-    environment: 
-      - ROS_HOSTNAME=hectorslam
-      - ROS_MASTER_URI=http://roscore:11311
-
-  
+      - ros-bin:/opt/ros/noetic
+      - boost-bin:/usr/include/boost
