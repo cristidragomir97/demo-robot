@@ -3,11 +3,10 @@ version: '2.1'
 
 volumes:
     ros-bin:
-    boost-bin:
 
 services:
   roscore:
-    build: ./ros
+    image: cristidragomir97/roscore
     environment: 
        - UDEV=1
        - ROS_HOSTNAME=roscore
@@ -19,7 +18,6 @@ services:
       - "11311:11311"
     volumes:
       - ros-bin:/opt/ros/noetic
-      - boost-bin:/usr/include/boost
 
   camera:
     image: cristidragomir97/rpicam
@@ -29,10 +27,9 @@ services:
        - ROS_MASTER_URI=http://roscore:11311
     volumes:
       - ros-bin:/opt/ros/noetic
-      - boost-bin:/usr/include/boost
 
   rosboard:
-    build: ./rosboard
+    image: cristidragomir97/rosboard
     environment: 
        - ROS_HOSTNAME=rosboard
        - ROS_MASTER_URI=http://roscore:11311
@@ -40,4 +37,3 @@ services:
       - "8888:8888"
     volumes:
       - ros-bin:/opt/ros/noetic
-      - boost-bin:/usr/include/boost
