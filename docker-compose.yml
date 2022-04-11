@@ -1,8 +1,12 @@
 
+
 version: '2.1'
 
 volumes:
-    ros-bin:
+    ros-bin: 
+    opencv-lib: 
+    opencv-include: 
+    usr-lib:
 
 services:
   roscore:
@@ -14,19 +18,16 @@ services:
     links: 
       - rosboard
       - camera
+      - robot-block
     ports:
       - "11311:11311"
     volumes:
       - ros-bin:/opt/ros/noetic
+      - opencv-lib:/usr/local/lib/opencv
+      - opencv-include:/usr/local/include/opencv
+      - usr-lib:/usr/lib/aarch64-linux-gnu
 
-  camera:
-    image: cristidragomir97/rpicam
-    privileged: true
-    environment: 
-       - ROS_HOSTNAME=camera
-       - ROS_MASTER_URI=http://roscore:11311
-    volumes:
-      - ros-bin:/opt/ros/noetic
+
 
   rosboard:
     image: cristidragomir97/rosboard
@@ -37,3 +38,44 @@ services:
       - "8888:8888"
     volumes:
       - ros-bin:/opt/ros/noetic
+
+
+############################################################################################################
+# robot-block is a hardware abstraction layer for I2C, UART and GPIO modules for the Raspberry Pi Eosystem
+# Is creates all the required ROS handlers for your hardware based on a configuration file. 
+# Long story short it's docker-compose for hardware
+############################################################################################################
+  robot-block:
+    privileged: true
+    build: .
+    environment: 
+       - UDEV=1
+       - ROS_HOSTNAME=robot-block
+       - ROS_MASTER_URI=http://roscore:11311
+    volumes:
+      - ros-bin:/opt/ros/noetic
+      - opencv-lib:/usr/local/lib/opencv
+      - opencv-include:/usr/local/include/opencv
+      - usr-lib:/usr/lib/aarch64-linux-gnu
+    ports:
+      - "8000:80"
+      - "5000:5000"
+    devices:
+      - "/dev:/dev"
+
+#####################################################################################################
+# arduino-block keeps your firmware fresh on AVR Arduino boards. Simply point it to a git reposistory 
+#####################################################################################################
+  arduino-block:
+    privileged: true
+    image: cristidragomir97/arduino-block
+    devices:
+      - "/dev:/dev"
+    environment: 
+      - AVRDUDE_CPU=atmega328p 
+      - MONITOR_BAUD=115200
+      - SERIAL_PORT=/dev/ttyAMA0
+      - REPO="https://github.com/cristidragomir97/motorhead"
+      - REPO_NAME="motorhead"
+      - SKETCH_FOLDER=/firmware
+      - ARDUINO_FQBN=arduino:avr:nano 
