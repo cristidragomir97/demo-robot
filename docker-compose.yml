@@ -1,81 +1,95 @@
-
-
 version: '2.1'
 
 volumes:
     ros-bin: 
-    opencv-lib: 
-    opencv-include: 
-    usr-lib:
+    boost-lib:
+    python-packages:
 
 services:
-  roscore:
-    image: cristidragomir97/roscore
+  ros-core:
+    image: cristidragomir97/ros-core
     environment: 
        - UDEV=1
-       - ROS_HOSTNAME=roscore
-       - ROS_MASTER_URI=http://roscore:11311
+       - ROS_HOSTNAME=ros-core
+       - ROS_MASTER_URI=http://ros-core:11311
     links: 
-      - rosboard
-      - camera
-      - robot-block
+      - ros-board
+      - ros-io 
     ports:
       - "11311:11311"
     volumes:
       - ros-bin:/opt/ros/noetic
-      - opencv-lib:/usr/local/lib/opencv
-      - opencv-include:/usr/local/include/opencv
-      - usr-lib:/usr/lib/aarch64-linux-gnu
+      - boost-lib:/usr/include/boost
 
-
-
-  rosboard:
-    image: cristidragomir97/rosboard
+  ros-board:
+    depends_on:
+      - ros-core
+    image: cristidragomir97/ros-board
     environment: 
-       - ROS_HOSTNAME=rosboard
-       - ROS_MASTER_URI=http://roscore:11311
+       - ROS_HOSTNAME=ros-board
+       - ROS_MASTER_URI=http://ros-core:11311
     ports:
       - "8888:8888"
     volumes:
       - ros-bin:/opt/ros/noetic
 
-
-############################################################################################################
-# robot-block is a hardware abstraction layer for I2C, UART and GPIO modules for the Raspberry Pi Eosystem
-# Is creates all the required ROS handlers for your hardware based on a configuration file. 
-# Long story short it's docker-compose for hardware
-############################################################################################################
-  robot-block:
+  ros-io:
+    depends_on:
+      - ros-core
     privileged: true
-    build: .
+    image: cristidragomir97/ros-io
     environment: 
        - UDEV=1
-       - ROS_HOSTNAME=robot-block
-       - ROS_MASTER_URI=http://roscore:11311
+       - ROS_HOSTNAME=ros-io
+       - ROS_MASTER_URI=http://ros-core:11311
+       - CONFIG_REPO=https://github.com/cristidragomir97/ep1-rc-car
     volumes:
       - ros-bin:/opt/ros/noetic
-      - opencv-lib:/usr/local/lib/opencv
-      - opencv-include:/usr/local/include/opencv
-      - usr-lib:/usr/lib/aarch64-linux-gnu
-    ports:
-      - "8000:80"
-      - "5000:5000"
+    devices:
+      - "/dev:/dev"
+     
+
+  ros-camera:
+    depends_on:
+      - ros-core
+    privileged: true
+    image: cristidragomir97/ros-camera
+    environment: 
+       - UDEV=1
+       - ROS_HOSTNAME=ros-camera
+       - ROS_MASTER_URI=http://ros-core:11311
+    volumes:
+      - ros-bin:/opt/ros/noetic
+      - boost-lib:/usr/include/boost
     devices:
       - "/dev:/dev"
 
-#####################################################################################################
-# arduino-block keeps your firmware fresh on AVR Arduino boards. Simply point it to a git reposistory 
-#####################################################################################################
-  arduino-block:
+
+#  ros-rplidar:
+#    depends_on:
+#      - ros-core
+#    privileged: true
+#    image: cristidragomir97/ros-rplidar
+#    environment: 
+#       - UDEV=1
+#       - ROS_HOSTNAME=ros-rplidar
+#       - ROS_MASTER_URI=http://ros-core:11311
+#    volumes:
+#      - ros-bin:/opt/ros/noetic
+#    devices:
+#      - "/dev:/dev"
+
+  ros-joystick:
+    depends_on:
+      - ros-core
     privileged: true
-    image: cristidragomir97/arduino-block
+    image: cristidragomir97/ros-joystick
+    environment: 
+       - ROS_HOSTNAME=ros-joystick
+       - ROS_MASTER_URI=http://ros-core:11311
+    volumes:
+      - ros-bin:/opt/ros/noetic
+      - boost-lib:/usr/include/boost
     devices:
       - "/dev:/dev"
-    environment: 
-      - AVRDUDE_CPU=atmega328p 
-      - MONITOR_BAUD=115200
-      - SERIAL_PORT=/dev/ttyAMA0
-      - REPO="https://github.com/cristidragomir97/motorhead"
-      - REPO_NAME="motorhead"
-      - SKETCH_FOLDER=/firmware
-      - ARDUINO_FQBN=arduino:avr:nano 
+    
